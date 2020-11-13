@@ -1,4 +1,7 @@
 class Spree::Admin::PartsController < Spree::Admin::BaseController
+  # JR: hack to skip auth on calls to this controller
+  skip_before_action :verify_authenticity_token
+
   helper_method :product
 
   def index
