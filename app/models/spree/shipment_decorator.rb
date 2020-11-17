@@ -14,25 +14,18 @@ module Spree::ShipmentDecorator
   def manifest
     inventory_units.group_by(&:variant_id).map do |variant, inventory_units|
       inventory_units.group_by(&:line_item_id).map do |line_item, units|
-
         line_item = units.first.line_item
         variant = units.first.variant
-
-        if Gem.loaded_specs['spree_core'].version >= Gem::Version.create('3.3.0')
-          states = units.group_by(&:state).each_with_object({}) { |(state, iu), acc| acc[state] = iu.sum(&:quantity) }
-          quantity = units.sum(&:quantity)
-        else
-          states = units.group_by(&:state).each_with_object({}) { |(state, iu), acc| acc[state] = iu.count }
-          quantity = units.length
-        end
+        states = units.group_by(&:state).each_with_object({}) { |(state, iu), acc| acc[state] = iu.sum(&:quantity) }
+        quantity = units.sum(&:quantity)
 
         part = line_item.try(:product).try(:assembly?) || false
         ManifestItem.new(part,
-                          line_item.try(:product),
-                          line_item,
-                          variant,
-                          quantity,
-                          states)
+                         line_item.try(:product),
+                         line_item,
+                         variant,
+                         quantity,
+                         states)
       end
     end.flatten
   end

@@ -4,32 +4,21 @@ module Spree
       def units
         @order.line_items.flat_map do |line_item|
           line_item.quantity_by_variant.flat_map do |variant, quantity|
-            if Gem.loaded_specs['spree_core'].version >= Gem::Version.create('3.3.0')
-              build_inventory_unit(variant, line_item, quantity)
-            else
-              quantity.times.map { build_inventory_unit(variant, line_item) }
-            end
+            build_inventory_unit(variant.id, line_item, quantity)
           end
         end
       end
 
-      def build_inventory_unit(variant, line_item, quantity=nil)
-        @order.inventory_units.includes(
-          variant: {
-            product: {
-              shipping_category: {
-                shipping_methods: [:calculator, { zones: :zone_members }]
-              }
-            }
-          }
-        ).build(
+      def build_inventory_unit(variant_id, line_item, quantity)
+        # They go through multiple splits, avoid loading the
+        # association to order until needed.
+        Spree::InventoryUnit.new(
           pending: true,
-          variant: variant,
-          line_item: line_item,
-          order: @order
-        ).tap do |iu|
-          iu.quantity = quantity if quantity
-        end
+          line_item_id: line_item.id,
+          variant_id: variant_id,
+          quantity: quantity,
+          order_id: @order.id
+        )
       end
     end
   end

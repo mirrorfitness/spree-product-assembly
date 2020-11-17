@@ -34,6 +34,7 @@ module Spree::ProductDecorator
   end
 
   private
+
   def assemblies_part(variant)
     Spree::AssembliesPart.get(self.id, variant.id)
   end

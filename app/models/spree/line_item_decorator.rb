@@ -31,8 +31,7 @@ module Spree::LineItemDecorator
   private
 
   def update_inventory
-    if (changed? || target_shipment.present?) &&
-        order.has_checkout_step?("delivery")
+    if changed? || target_shipment.present?
       if product.assembly?
         Spree::OrderInventoryAssembly.new(self).verify(target_shipment)
       else
